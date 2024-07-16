@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebView Communication</title>
+</head>
+<body>
+    <iframe id="youtubeFrame" src="https://www.youtube.com/" width="100%" height="100%"></iframe>
+
+    <script>
+        // Function to handle messages from the iframe
+        function handleMessage(event) {
+            const message = event.data;
+            if (message.action === 'homeButtonClicked') {
+                // Send message to Bravo app to navigate to the Home page
+                const bravoMessage = { "action": "goto", "params": { "href": "home" } };
+                if (window.bravo !== undefined) {
+                    window.bravo.postMessage(bravoMessage);
+                }
+            }
+        }
+
+        window.addEventListener('message', handleMessage, false);
+
+        // Inject JavaScript into the iframe
+        const iframe = document.getElementById('youtubeFrame');
+        iframe.onload = () => {
+            iframe.contentWindow.postMessage(`
+                document.querySelector("button").addEventListener("click", () => {
+                    window.top.postMessage({ action: 'homeButtonClicked' }, "*");
+                });
+            `, '*');
+        };
+    </script>
+</body>
+</html>
